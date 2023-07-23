@@ -1,0 +1,17 @@
+{
+  "name": "aws-status-poem-bot",
+  "version": "0.0.0",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20230717.1",
+    "typescript": "^5.1.6",
+    "wrangler": "3.3.0"
+  },
+  "private": true,
+  "scripts": {
+    "start": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy src/index.ts"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.2.6"
+  }
+}

@@ -1,0 +1,17 @@
+name = "aws-status-poem-bot"
+compatibility_date = "2023-07-23"
+
+[[kv_namespaces]]
+binding = "FEED_ITEMS"
+id = "<REPLACE ME>"
+preview_id = "<REPLACE ME>"
+
+[triggers]
+crons = ["0 0 * * *"]
+
+[vars]
+MSTDN_URL = "https://botsin.space"
+
+# Secrets
+# - OPENAI_API_KEY
+# - MSTDN_ACCESS_TOKEN
