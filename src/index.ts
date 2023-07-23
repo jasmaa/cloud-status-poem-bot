@@ -18,8 +18,12 @@ Poem:
 ${poemStart}`;
 }
 
-function generateToot(poem: string, link: string) {
-	return poem + "\n\n" + link;
+function generateToot(item: any, poem: string) {
+	return `## ${item.title} ##
+
+${poem}
+
+Source: ${item.guid}`;
 }
 
 export default {
@@ -72,10 +76,11 @@ export default {
 
 						const completion = completionContent.choices[0].message.content;
 						const poem = poemStart + completion;
-						const toot = generateToot(poem, item.guid);
+						const toot = generateToot(item, poem);
 						const tootRes = await fetch(`${env.MSTDN_URL}/api/v1/statuses`, {
 							method: "POST",
 							headers: {
+								'Content-Type': 'application/json',
 								'Authorization': `Bearer ${env.MSTDN_ACCESS_TOKEN}`,
 							},
 							body: JSON.stringify({
