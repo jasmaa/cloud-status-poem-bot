@@ -1,6 +1,6 @@
 # AWS Status Poem Bot
 
-A Mastodon bot that toots a poem when AWS updates their status.
+A Mastodon bot that writes poems about AWS statuses.
 
 
 ## Getting Started
