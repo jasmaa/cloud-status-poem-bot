@@ -36,8 +36,15 @@ wrangler secret put OPENAI_API_KEY
 wrangler secret put MSTDN_ACCESS_TOKEN
 ```
 
-Create `wrangler.toml` from `wrangler.sample.toml` and fill with proper values
-(the default Mastodon instance is botsin.space).
+Create `.env` from `sample.env` and fill with proper values (the default
+Mastodon instance is botsin.space).
+
+Generate `wrangler.toml` with script:
+
+```
+pip install -r "requirements.txt"
+pyhon scripts/generate_wrangler.py
+```
 
 Deploy worker with:
 
