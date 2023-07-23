@@ -7,18 +7,46 @@ export interface Env {
 	MSTDN_ACCESS_TOKEN: string;
 }
 
-function generatePrompt(incident: string, poemStart: string) {
+interface RssItem {
+	title: string;
+	link: string;
+	pubDate: string;
+	guid: string;
+	description: string;
+}
+
+interface CompletionResponse {
+	id: string;
+	object: string;
+	created: number;
+	model: string;
+	usage: {
+		prompt_tokens: number;
+		completion_tokens: number;
+		total_tokens: number;
+	};
+	choices: {
+		message: {
+			role: string;
+			content: string;
+		};
+		finish_reason: string;
+		index: number;
+	}[];
+}
+
+function generatePrompt(description: string, poemStart: string) {
 	return `
 The following is a poem about an AWS incident. The poem is less than 10 lines and rhymes:
 
 Incident:
-${incident}
+${description}
 
 Poem:
 ${poemStart}`;
 }
 
-function generateToot(item: any, poem: string) {
+function generateToot(item: RssItem, poem: string) {
 	return `## ${item.title} ##
 
 ${poem}
@@ -41,7 +69,7 @@ export default {
 			const parser = new XMLParser();
 			const feed = parser.parse(feedContent);
 
-			const items = (Array.isArray(feed.rss.channel.item) ? feed.rss.channel.item : [feed.rss.channel.item])
+			const items: RssItem[] = (Array.isArray(feed.rss.channel.item) ? feed.rss.channel.item : [feed.rss.channel.item])
 				.filter((v: any) => !!v);
 			for (const item of items) {
 				const recordValue = await env.FEED_ITEMS.get(item.guid);
@@ -71,7 +99,7 @@ export default {
 						}),
 					});
 					if (completionRes.status === 200) {
-						const completionContent: any = await completionRes.json();
+						const completionContent: CompletionResponse = await completionRes.json();
 						console.log(`Successfully received completion.`);
 
 						const completion = completionContent.choices[0].message.content;
