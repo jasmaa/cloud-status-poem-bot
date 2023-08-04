@@ -14,7 +14,7 @@ id = "{os.environ.get('FEED_ITEMS_ID')}"
 preview_id = "{os.environ.get('FEED_ITEMS_PREVIEW_ID')}"
 
 [triggers]
-crons = ["0 * * * *"]
+crons = ["* * * * *"]
 
 [vars]
 MSTDN_URL = "{os.environ.get('MSTDN_URL')}"

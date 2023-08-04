@@ -70,7 +70,8 @@ export default {
 			const feed = parser.parse(feedContent);
 
 			const items: RssItem[] = (Array.isArray(feed.rss.channel.item) ? feed.rss.channel.item : [feed.rss.channel.item])
-				.filter((v: any) => !!v);
+				.filter((v: any) => !!v)
+				.reverse();
 			for (const item of items) {
 				const recordValue = await env.FEED_ITEMS.get(item.guid);
 				if (recordValue) {
