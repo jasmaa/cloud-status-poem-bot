@@ -7,7 +7,6 @@ https://platform.openai.com/account/api-keys.
 
 Create an API key. This will be `OPEN_AI_API_KEY`.
 
-
 ## Generate Mastodon API key
 
 Go to Mastodon instance of choice and create an account.
@@ -15,10 +14,10 @@ Go to Mastodon instance of choice and create an account.
 Go to Settings->Development and click "New application".
 
 Create an app with the following permissions:
-  - `write:statuses`
+
+- `write:statuses`
 
 Copy the access token from the app. This will be `MSTDN_ACCESS_TOKEN`.
-
 
 # Setup Cloudflare worker
 
