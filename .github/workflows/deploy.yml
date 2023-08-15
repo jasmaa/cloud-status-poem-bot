@@ -26,4 +26,4 @@ jobs:
       - run: python scripts/generate-wrangler.py
       - run: yarn install --immutable --immutable-cache --check-cache
       - run: yarn test
-      - run: npx wrangler publish > /dev/null
+      - run: npx wrangler deploy src/index.ts > /dev/null
