@@ -2,7 +2,7 @@ import { XMLParser } from "fast-xml-parser";
 
 export interface Env {
   FEED_ITEMS: KVNamespace;
-  OPENAI_API_KEY: string;
+  GEMINI_API_KEY: string;
   MSTDN_URL: string;
   MSTDN_ACCESS_TOKEN: string;
 }
@@ -15,23 +15,14 @@ interface RssItem {
   description: string;
 }
 
-interface CompletionResponse {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-  choices: {
-    message: {
+interface GeminiCompletionResponse {
+  candidates: {
+    content: {
+      parts: {
+        text: string;
+      }[];
       role: string;
-      content: string;
     };
-    finish_reason: string;
-    index: number;
   }[];
 }
 
@@ -77,22 +68,22 @@ async function getRssFeedItems(): Promise<RssItem[]> {
   }
 }
 
-async function generatePoemOpenAI(apiKey: string, incident: string, poemStart: string): Promise<string> {
+async function generatePoemGemini(apiKey: string, incident: string, poemStart: string): Promise<string> {
   const prompt = generatePrompt(incident, poemStart);
   const completionRes = await fetch(
-    "https://api.openai.com/v1/chat/completions",
+    "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        "x-goog-api-key": apiKey,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
+        contents: [
           {
-            role: "system",
-            content: prompt,
+            parts: [
+              { text: prompt }
+            ]
           },
         ],
       }),
@@ -100,12 +91,11 @@ async function generatePoemOpenAI(apiKey: string, incident: string, poemStart: s
   );
   if (completionRes.status === 200) {
     const completionContent =
-      await completionRes.json() as CompletionResponse;
+      await completionRes.json() as GeminiCompletionResponse;
     console.log(`Successfully received completion.`);
 
-    const completion = completionContent.choices[0].message.content;
-    const poem = poemStart + completion;
-    return poem
+    const completion = completionContent.candidates[0].content.parts[0].text;
+    return completion;
   } else {
     throw new Error(
       `Failed to generate completion: ${await completionRes.text()}`
@@ -151,7 +141,7 @@ export default {
 
         const poemStart = "Roses are red,\nViolets are blue,\n";
         const incident = JSON.stringify(item, null, 2);
-        const poem = await generatePoemOpenAI(env.OPENAI_API_KEY, incident, poemStart);
+        const poem = await generatePoemGemini(env.GEMINI_API_KEY, incident, poemStart);
         const tootContent = generateToot(item, poem);
         await toot(env.MSTDN_URL, env.MSTDN_ACCESS_TOKEN, tootContent);
 

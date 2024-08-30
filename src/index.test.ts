@@ -3,14 +3,14 @@ import handlers from ".";
 const controller: ScheduledController = {
   scheduledTime: 1,
   cron: "* * * * *",
-  noRetry: () => {},
+  noRetry: () => { },
 };
 
 const env = getMiniflareBindings();
 
 const ctx: ExecutionContext = {
-  waitUntil: () => {},
-  passThroughOnException: () => {},
+  waitUntil: () => { },
+  passThroughOnException: () => { },
 };
 
 describe("test scheduled handler", () => {
@@ -49,29 +49,21 @@ describe("test scheduled handler", () => {
       .reply(200, rssContent);
 
     const completionContent = {
-      choices: [
+      candidates: [
         {
-          finish_reason: "stop",
-          index: 0,
-          message: {
-            content: "Increasing code coverage,\nLike eating a dry shoe.",
-            role: "assistant",
+          content: {
+            parts: [
+              {
+                text: "Roses are red,\nViolets are blue,\nIncreasing code coverage,\nLike eating a dry shoe."
+              },
+            ],
           },
         },
       ],
-      created: 1677664795,
-      id: "chatcmpl-7QyqpwdfhqwajicIEznoc6Q47XAyW",
-      model: "gpt-3.5-turbo-0613",
-      object: "chat.completion",
-      usage: {
-        completion_tokens: 17,
-        prompt_tokens: 57,
-        total_tokens: 74,
-      },
     };
     fetchMock
-      .get("https://api.openai.com")
-      .intercept({ path: `/v1/chat/completions`, method: "POST" })
+      .get("https://generativelanguage.googleapis.com")
+      .intercept({ path: `/v1/models/gemini-pro:generateContent`, method: "POST" })
       .reply(200, completionContent);
 
     fetchMock
