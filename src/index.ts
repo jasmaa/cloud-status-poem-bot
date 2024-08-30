@@ -54,95 +54,111 @@ ${poem}
 Source: ${item.guid}`;
 }
 
+async function getRssFeedItems(): Promise<RssItem[]> {
+  console.log(`Fetching status feed...`);
+  const feedRes = await fetch("https://status.aws.amazon.com/rss/all.rss");
+  if (feedRes.status === 200) {
+    const feedContent = await feedRes.text();
+    console.log(`Successfully fetched status feed.`);
+
+    const parser = new XMLParser();
+    const feed = parser.parse(feedContent);
+
+    const items: RssItem[] = (
+      Array.isArray(feed.rss.channel.item)
+        ? feed.rss.channel.item
+        : [feed.rss.channel.item]
+    )
+      .filter((v: any) => !!v)
+      .reverse();
+    return items;
+  } else {
+    throw new Error(`Failed to fetch status feed: ${await feedRes.text()}`);
+  }
+}
+
+async function generatePoemOpenAI(apiKey: string, incident: string, poemStart: string): Promise<string> {
+  const prompt = generatePrompt(incident, poemStart);
+  const completionRes = await fetch(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: prompt,
+          },
+        ],
+      }),
+    }
+  );
+  if (completionRes.status === 200) {
+    const completionContent =
+      await completionRes.json() as CompletionResponse;
+    console.log(`Successfully received completion.`);
+
+    const completion = completionContent.choices[0].message.content;
+    const poem = poemStart + completion;
+    return poem
+  } else {
+    throw new Error(
+      `Failed to generate completion: ${await completionRes.text()}`
+    );
+  }
+}
+
+async function toot(url: string, accessToken: string, content: string) {
+  const tootRes = await fetch(`${url}/api/v1/statuses`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      status: content,
+    }),
+  });
+  if (tootRes.status === 200) {
+    console.log(`Successfully tooted poem.`);
+  } else {
+    throw new Error(`Failed to toot poem: ${await tootRes.text()}`);
+  }
+}
+
 export default {
   async scheduled(
     controller: ScheduledController,
     env: Env,
     ctx: ExecutionContext
   ): Promise<void> {
-    console.log(`Fetching status feed...`);
-    const feedRes = await fetch("https://status.aws.amazon.com/rss/all.rss");
-    if (feedRes.status === 200) {
-      const feedContent = await feedRes.text();
-      console.log(`Successfully fetched status feed.`);
+    const items = await getRssFeedItems();
+    console.log(`Found ${items.length} items.`);
 
-      const parser = new XMLParser();
-      const feed = parser.parse(feedContent);
+    for (const item of items) {
+      const recordValue = await env.FEED_ITEMS.get(item.guid);
+      if (recordValue) {
+        console.log(`Found record with guid=${item.guid}. Skipping...`);
+      } else {
+        console.log(
+          `Did not find record with guid=${item.guid}. Generating...`
+        );
 
-      const items: RssItem[] = (
-        Array.isArray(feed.rss.channel.item)
-          ? feed.rss.channel.item
-          : [feed.rss.channel.item]
-      )
-        .filter((v: any) => !!v)
-        .reverse();
-      for (const item of items) {
-        const recordValue = await env.FEED_ITEMS.get(item.guid);
-        if (recordValue) {
-          console.log(`Found record with guid=${item.guid}. Skipping...`);
-        } else {
-          console.log(
-            `Did not find record with guid=${item.guid}. Generating...`
-          );
+        const poemStart = "Roses are red,\nViolets are blue,\n";
+        const incident = JSON.stringify(item, null, 2);
+        const poem = await generatePoemOpenAI(env.OPENAI_API_KEY, incident, poemStart);
+        const tootContent = generateToot(item, poem);
+        await toot(env.MSTDN_URL, env.MSTDN_ACCESS_TOKEN, tootContent);
 
-          const incident = JSON.stringify(item, null, 2);
-          const poemStart = "Roses are red,\nViolets are blue,\n";
-          const prompt = generatePrompt(incident, poemStart);
+        await env.FEED_ITEMS.put(item.guid, tootContent);
 
-          const completionRes = await fetch(
-            "https://api.openai.com/v1/chat/completions",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-              },
-              body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: [
-                  {
-                    role: "system",
-                    content: prompt,
-                  },
-                ],
-              }),
-            }
-          );
-          if (completionRes.status === 200) {
-            const completionContent: CompletionResponse =
-              await completionRes.json();
-            console.log(`Successfully received completion.`);
-
-            const completion = completionContent.choices[0].message.content;
-            const poem = poemStart + completion;
-            const toot = generateToot(item, poem);
-            const tootRes = await fetch(`${env.MSTDN_URL}/api/v1/statuses`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${env.MSTDN_ACCESS_TOKEN}`,
-              },
-              body: JSON.stringify({
-                status: toot,
-              }),
-            });
-            if (tootRes.status === 200) {
-              console.log(`Successfully tooted poem.`);
-
-              await env.FEED_ITEMS.put(item.guid, toot);
-              console.log(`Successfully wrote incident record.`);
-            } else {
-              console.error(`Failed to toot poem: ${await tootRes.text()}`);
-            }
-          } else {
-            console.error(
-              `Failed to generate completion: ${await completionRes.text()}`
-            );
-          }
-        }
+        console.log(`Successfully wrote incident record.`);
       }
-    } else {
-      console.error(`Failed to fetch status feed: ${await feedRes.text()}`);
     }
   },
 };
