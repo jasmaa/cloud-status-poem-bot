@@ -28,12 +28,12 @@ interface GeminiCompletionResponse {
 
 function generatePrompt(description: string, poemStart: string) {
   return `
-The following is a poem about an AWS incident. The poem is less than 10 lines and rhymes:
+The following is an AWS incident:
 
-Incident:
 ${description}
 
-Poem:
+The following is a poem about the incident above. It is less than 3 stanzas long and rhymes:
+
 ${poemStart}`;
 }
 
@@ -95,7 +95,7 @@ async function generatePoemGemini(apiKey: string, incident: string, poemStart: s
     console.log(`Successfully received completion.`);
 
     const completion = completionContent.candidates[0].content.parts[0].text;
-    return completion;
+    return poemStart + completion;
   } else {
     throw new Error(
       `Failed to generate completion: ${await completionRes.text()}`
