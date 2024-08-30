@@ -1,11 +1,14 @@
 # Setup
 
-## Generate Open AI API key
+## Generate Gemini API key
 
-Create an Open AI account and go to
-https://platform.openai.com/account/api-keys.
+Create a Google Cloud account and create a new project.
 
-Create an API key. This will be `OPEN_AI_API_KEY`.
+Go to https://aistudio.google.com/app/apikey.
+
+Create an API key and select your project.
+
+Copy the key value. This will be `GEMINI_API_KEY`.
 
 ## Generate Mastodon API key
 
@@ -31,7 +34,7 @@ wrangler kv:namespace create FEED_ITEMS --preview
 Upload respective secrets via Wrangler:
 
 ```
-wrangler secret put OPENAI_API_KEY
+wrangler secret put GEMINI_API_KEY
 wrangler secret put MSTDN_ACCESS_TOKEN
 ```
 
@@ -46,6 +49,10 @@ pyhon scripts/generate_wrangler.py
 ```
 
 ## Development
+
+Create `.dev.vars` from `sample.dev.vars`.
+
+Replace values with secrets generated above.
 
 Run the worker in scheduled mode with:
 
