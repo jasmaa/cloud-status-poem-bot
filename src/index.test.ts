@@ -54,7 +54,7 @@ describe("test scheduled handler", () => {
           content: {
             parts: [
               {
-                text: "Roses are red,\nViolets are blue,\nIncreasing code coverage,\nLike eating a dry shoe."
+                text: "Increasing code coverage,\nLike eating a dry shoe."
               },
             ],
           },
