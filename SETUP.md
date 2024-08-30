@@ -45,6 +45,22 @@ pip install -r "requirements.txt"
 pyhon scripts/generate_wrangler.py
 ```
 
+## Development
+
+Run the worker in scheduled mode with:
+
+```
+yarn start
+```
+
+Trigger the worker with:
+
+```
+curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
+```
+
+## Release
+
 Deploy worker with:
 
 ```
