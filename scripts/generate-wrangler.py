@@ -20,7 +20,7 @@ crons = ["* * * * *"]
 MSTDN_URL = "{os.environ.get('MSTDN_URL')}"
 
 # Secrets
-# - OPENAI_API_KEY
+# - GEMINI_API_KEY
 # - MSTDN_ACCESS_TOKEN
 """
     with open("wrangler.toml", "w") as f:
