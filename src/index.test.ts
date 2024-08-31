@@ -1,25 +1,19 @@
-import handlers from ".";
+import { describe, beforeEach, it, expect, beforeAll } from "vitest";
+import { env, fetchMock, createExecutionContext, createScheduledController } from "cloudflare:test";
+import handlers, { Env } from ".";
 
-const controller: ScheduledController = {
-  scheduledTime: 1,
-  cron: "* * * * *",
-  noRetry: () => { },
-};
-
-const env = getMiniflareBindings();
-
-const ctx: ExecutionContext = {
-  waitUntil: () => { },
-  passThroughOnException: () => { },
-};
+declare module "cloudflare:test" {
+  interface ProvidedEnv extends Env { }
+}
 
 describe("test scheduled handler", () => {
-  const fetchMock = getMiniflareFetchMock();
+  beforeAll(() => {
+    fetchMock.activate();
+    fetchMock.disableNetConnect();
+  });
 
   beforeEach(async () => {
     await env.FEED_ITEMS.delete("http://status.aws.amazon.com/sample1");
-
-    fetchMock.disableNetConnect();
 
     const rssContent = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
@@ -73,6 +67,9 @@ describe("test scheduled handler", () => {
   });
 
   it("should generate and store poem to KV store when status not in KV store", async () => {
+    const controller = createScheduledController();
+    const ctx = createExecutionContext();
+
     await handlers.scheduled(controller, env, ctx);
 
     const res = await env.FEED_ITEMS.get(
@@ -101,6 +98,9 @@ And I don't know what to do.
 
 Source: http://status.aws.amazon.com/sample1`
     );
+
+    const controller = createScheduledController();
+    const ctx = createExecutionContext();
 
     await handlers.scheduled(controller, env, ctx);
 
