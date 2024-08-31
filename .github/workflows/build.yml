@@ -1,0 +1,25 @@
+name: Test package
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MSTDN_URL: "https://botsin.space"
+    name: Build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install -r requirements.txt
+      - run: python scripts/generate-wrangler.py
+      - run: yarn install --immutable --immutable-cache --check-cache
+      - run: yarn test
