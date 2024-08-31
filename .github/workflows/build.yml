@@ -1,6 +1,9 @@
-name: Test package
+name: Test and deploy package
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -9,6 +12,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      FEED_ITEMS_ID: ${{ secrets.FEED_ITEMS_ID }}
+      FEED_ITEMS_PREVIEW_ID: ${{ secrets.FEED_ITEMS_PREVIEW_ID }}
       MSTDN_URL: "https://botsin.space"
     name: Build
     steps:
@@ -23,3 +29,5 @@ jobs:
       - run: python scripts/generate-wrangler.py
       - run: yarn install --immutable --immutable-cache --check-cache
       - run: yarn test
+      - run: npx wrangler deploy src/index.ts > /dev/null
+        if: ${{ github.ref == 'refs/heads/main' }}
