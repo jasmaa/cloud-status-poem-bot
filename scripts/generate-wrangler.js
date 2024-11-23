@@ -1,3 +1,7 @@
+/*
+ * Generates `wrangler.toml` from env vars.
+ */
+
 require('dotenv').config();
 const fs = require('node:fs');
 
