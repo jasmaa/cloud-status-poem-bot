@@ -32,7 +32,7 @@ The following is an AWS incident:
 
 ${description}
 
-The following is a poem about the incident above. It is less than 3 stanzas long and rhymes:
+The following is a poem about the AWS incident. It is written in the style of Robert Frost:
 
 ${poemStart}`;
 }
