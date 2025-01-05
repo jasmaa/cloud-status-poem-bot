@@ -1775,7 +1775,7 @@ wrangler@3.77.0:
   optionalDependencies:
     fsevents "~2.3.2"
 
-wrangler@^3.3.0:
+wrangler@^3.88.0:
   version "3.99.0"
   resolved "https://registry.yarnpkg.com/wrangler/-/wrangler-3.99.0.tgz#2c442fde399d45ce23262b88056bb6794377f6f6"
   integrity sha512-k0x4rT3G/QCbxcoZY7CHRVlAIS8WMmKdga6lf4d2c3gXFqssh44vwlTDuARA9QANBxKJTcA7JPTJRfUDhd9QBA==

@@ -16,7 +16,7 @@ preview_id = "${process.env.FEED_ITEMS_PREVIEW_ID}"
 [triggers]
 crons = ["* * * * *"]
 
-[observability.logs]
+[observability]
 enabled = true
 
 [vars]
