@@ -28,12 +28,14 @@ interface GeminiCompletionResponse {
 
 function generatePrompt(description: string, poemStart: string) {
   return `
-The following is an AWS incident:
+The following is an AWS incident.
 
+Incident:
 ${description}
 
-The following is a poem about the AWS incident. It is written in the style of Robert Frost:
+The following is a poem about the AWS incident. It has 4 stanzas. It rhymes with ABCB pattern. It has no title.
 
+Poem:
 ${poemStart}`;
 }
 
