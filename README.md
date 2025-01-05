@@ -45,7 +45,7 @@ wrangler secret put MSTDN_ACCESS_TOKEN
 ```
 
 Create `.env` from `sample.env` and fill with proper values (the default
-Mastodon instance is botsin.space).
+Mastodon instance is mastodon.social).
 
 Generate `wrangler.toml` with script:
 

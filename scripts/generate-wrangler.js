@@ -16,6 +16,9 @@ preview_id = "${process.env.FEED_ITEMS_PREVIEW_ID}"
 [triggers]
 crons = ["* * * * *"]
 
+[observability.logs]
+enabled = true
+
 [vars]
 MSTDN_URL = "${process.env.MSTDN_URL}"
 
