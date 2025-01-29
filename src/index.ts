@@ -28,14 +28,41 @@ interface GeminiCompletionResponse {
 
 function generatePrompt(description: string, poemStart: string) {
   return `
-The following is an AWS incident.
+You are the world's best poet. You have been tasked to write high quality and funny poems about AWS incidents.
 
-Incident:
+The following is an example of an incident and a poem written for it:
+
+## Incident
+
+At 13:00 UTC, AWS Infinidash experienced a data plane availability drop in the us-east-1 region. We have confirmed that affected dashes are unable to ingest data from S3 and Kinesis Firehose sources. We are investigating a fix and will provide an update soon.
+
+## Poem
+
+Roses are red,
+Violets are blue,
+Infinidash is down,
+Oh what shall we do?
+
+Dashes won't ingest,
+Data stuck at rest.
+Customers are angry,
+Oh what a mess!
+
+But soon AWS will find,
+The solution in sight.
+They'll fix the data plane,
+And make this all right.
+
+Please write a poem about the following AWS incident. The poem must adhere to the following criteria. If it does not, you will be fined $100:
+- It must rhyme
+- It must sound good
+
+## Incident
+
 ${description}
 
-The following is a poem about the AWS incident. It has 4 stanzas. It rhymes with ABCB pattern. It has no title.
+## Poem
 
-Poem:
 ${poemStart}`;
 }
 
