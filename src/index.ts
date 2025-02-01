@@ -100,7 +100,7 @@ async function getRssFeedItems(): Promise<RssItem[]> {
 async function generatePoemGemini(apiKey: string, incident: string, poemStart: string): Promise<string> {
   const prompt = generatePrompt(incident, poemStart);
   const completionRes = await fetch(
-    "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
+    "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent",
     {
       method: "POST",
       headers: {
@@ -124,7 +124,7 @@ async function generatePoemGemini(apiKey: string, incident: string, poemStart: s
     console.log(`Successfully received completion.`);
 
     const completion = completionContent.candidates[0].content.parts[0].text;
-    return poemStart + completion;
+    return completion;
   } else {
     throw new Error(
       `Failed to generate completion: ${await completionRes.text()}`

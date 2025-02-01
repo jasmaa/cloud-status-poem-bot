@@ -15,7 +15,7 @@ rl.question(`Enter prompt: `, async (prompt) => {
 
   const apiKey = process.env.GEMINI_API_KEY;
   const completionRes = await fetch(
-    "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
+    "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent",
     {
       method: "POST",
       headers: {

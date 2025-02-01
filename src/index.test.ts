@@ -48,7 +48,7 @@ describe("test scheduled handler", () => {
           content: {
             parts: [
               {
-                text: "Increasing code coverage,\nLike eating a dry shoe."
+                text: "Roses are red,\nViolets are blue,\nIncreasing code coverage,\nLike eating a dry shoe."
               },
             ],
           },
@@ -57,7 +57,7 @@ describe("test scheduled handler", () => {
     };
     fetchMock
       .get("https://generativelanguage.googleapis.com")
-      .intercept({ path: `/v1/models/gemini-pro:generateContent`, method: "POST" })
+      .intercept({ path: `/v1/models/gemini-1.5-pro:generateContent`, method: "POST" })
       .reply(200, completionContent);
 
     fetchMock
