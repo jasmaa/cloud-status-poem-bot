@@ -195,6 +195,7 @@ export default {
             poem,
           };
           await env.FEED_ITEMS.put(item.guid, JSON.stringify(record));
+          console.log(`Successfully generated poem for item guid=${item.guid}.`);
         }
 
         if (record.status === FeedRecordStatus.PENDING_TOOT) {
@@ -208,6 +209,7 @@ export default {
               status: FeedRecordStatus.COMPLETE,
             };
             await env.FEED_ITEMS.put(item.guid, JSON.stringify(record));
+            console.log(`Successfully tooted poem for item guid=${item.guid}.`);
           } else {
             console.log(`Error: poem not found for item guid=${item.guid}! Skipping.`);
           }
