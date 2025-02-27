@@ -55,7 +55,14 @@ function mockSuccessfulGeminiCompletion() {
     .reply(200, completionContent);
 }
 
-function mockFailingGeminiCompletion() {
+function mockClientFailureGeminiCompletion() {
+  fetchMock
+    .get("https://generativelanguage.googleapis.com")
+    .intercept({ path: `/v1/models/gemini-1.5-flash:generateContent`, method: "POST" })
+    .reply(400, "bad request");
+}
+
+function mockServerFailureGeminiCompletion() {
   fetchMock
     .get("https://generativelanguage.googleapis.com")
     .intercept({ path: `/v1/models/gemini-1.5-flash:generateContent`, method: "POST" })
@@ -69,7 +76,14 @@ function mockSuccessfulToot() {
     .reply(200, {});
 }
 
-function mockFailingToot() {
+function mockClientFailureToot() {
+  fetchMock
+    .get(env.MSTDN_URL)
+    .intercept({ path: `/api/v1/statuses`, method: "POST" })
+    .reply(400, "bad request");
+}
+
+function mockServerFailureToot() {
   fetchMock
     .get(env.MSTDN_URL)
     .intercept({ path: `/api/v1/statuses`, method: "POST" })
@@ -86,7 +100,7 @@ describe("test scheduled handler", () => {
     await env.FEED_ITEMS.delete("http://status.aws.amazon.com/sample1");
   });
 
-  it("should complete record generating poem when no existing record", async () => {
+  it("should set record to COMPLETE generating poem when no existing record", async () => {
     mockSuccessfulRssFeed();
     mockSuccessfulGeminiCompletion();
     mockSuccessfulToot();
@@ -111,7 +125,7 @@ Like eating a dry shoe.`;
     expect(feedRecord.poem).toBe(expectedPoem);
   });
 
-  it("should complete record without generating poem when existing PENDING_TOOT record", async () => {
+  it("should set record to COMPLETE without generating poem when existing PENDING_TOOT record", async () => {
     mockSuccessfulRssFeed();
     mockSuccessfulToot();
 
@@ -148,7 +162,7 @@ Like eating a dry shoe.`;
     expect(feedRecord.poem).toBe(expectedPoem);
   });
 
-  it("should complete record without generating poem when existing COMPLETE record", async () => {
+  it("should set record to COMPLETE without generating poem when existing COMPLETE record", async () => {
     mockSuccessfulRssFeed();
 
     const storedPoem = `Roses are red,
@@ -183,9 +197,9 @@ Like eating a dry shoe.`;
     expect(feedRecord.poem).toBe(expectedPoem);
   });
 
-  it("should not set record when no existing record and Gemini completion fails", async () => {
+  it("should not set record when no existing record and server error for Gemini completion", async () => {
     mockSuccessfulRssFeed();
-    mockFailingGeminiCompletion();
+    mockServerFailureGeminiCompletion();
 
     const controller = createScheduledController();
     const ctx = createExecutionContext();
@@ -199,10 +213,10 @@ Like eating a dry shoe.`;
     expect(res).toBeNull();
   });
 
-  it("should set PENDING_TOOT record when no existing record and Mastodon toot fails", async () => {
+  it("should set record to PENDING_TOOT when no existing record and server failure for Mastodon toot", async () => {
     mockSuccessfulRssFeed();
     mockSuccessfulGeminiCompletion();
-    mockFailingToot();
+    mockServerFailureToot();
 
     const controller = createScheduledController();
     const ctx = createExecutionContext();
@@ -234,5 +248,40 @@ Like eating a dry shoe.`;
     const ctx = createExecutionContext();
 
     await handlers.scheduled(controller, env, ctx);
+  });
+
+  it("should set record to FAILED when bad request for Gemini completion", async () => {
+    mockSuccessfulRssFeed();
+    mockClientFailureGeminiCompletion();
+
+    const controller = createScheduledController();
+    const ctx = createExecutionContext();
+
+    await handlers.scheduled(controller, env, ctx);
+
+    const res = await env.FEED_ITEMS.get(
+      "http://status.aws.amazon.com/sample1"
+    );
+    const feedRecord: FeedRecord = JSON.parse(res!);
+
+    expect(feedRecord.status).toBe(FeedRecordStatus.FAILED);
+  });
+
+  it("should set record to FAILED when bad request for Mastodon toot", async () => {
+    mockSuccessfulRssFeed();
+    mockSuccessfulGeminiCompletion();
+    mockClientFailureToot();
+
+    const controller = createScheduledController();
+    const ctx = createExecutionContext();
+
+    await handlers.scheduled(controller, env, ctx);
+
+    const res = await env.FEED_ITEMS.get(
+      "http://status.aws.amazon.com/sample1"
+    );
+    const feedRecord: FeedRecord = JSON.parse(res!);
+
+    expect(feedRecord.status).toBe(FeedRecordStatus.FAILED);
   });
 });

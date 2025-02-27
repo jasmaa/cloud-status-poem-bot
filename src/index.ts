@@ -30,12 +30,27 @@ export enum FeedRecordStatus {
   PENDING_POEM = "PENDING_POEM",
   PENDING_TOOT = "PENDING_TOOT",
   COMPLETE = "COMPLETE",
+  FAILED = "FAILED",
 }
 
 export interface FeedRecord {
   status: FeedRecordStatus;
   item?: RssItem;
   poem?: string;
+}
+
+class ClientError extends Error { }
+
+class ServerError extends Error { }
+
+function generateErrorFromStatus(status: number, errorMsg: string): Error {
+  if (Math.floor(status / 100) === 4) {
+    return new ClientError(errorMsg);
+  } else if (Math.floor(status / 100) == 5) {
+    return new ServerError(errorMsg)
+  } else {
+    return new Error(errorMsg);
+  }
 }
 
 function generatePrompt(description: string, poemStart: string) {
@@ -106,7 +121,10 @@ async function getRssFeedItems(): Promise<RssItem[]> {
       .reverse();
     return items;
   } else {
-    throw new Error(`Failed to fetch status feed: ${await feedRes.text()}`);
+    throw generateErrorFromStatus(
+      feedRes.status,
+      `Failed to fetch status feed: ${await feedRes.text()}`,
+    );
   }
 }
 
@@ -142,8 +160,9 @@ async function generatePoemGemini(apiKey: string, incident: string, poemStart: s
     const completion = completionContent.candidates[0].content.parts[0].text;
     return completion;
   } else {
-    throw new Error(
-      `Failed to generate completion: ${await completionRes.text()}`
+    throw generateErrorFromStatus(
+      completionRes.status,
+      `Failed to generate completion: ${await completionRes.text()}`,
     );
   }
 }
@@ -162,7 +181,10 @@ async function toot(url: string, accessToken: string, content: string) {
   if (tootRes.status === 200) {
     console.log(`Successfully tooted poem.`);
   } else {
-    throw new Error(`Failed to toot poem: ${await tootRes.text()}`);
+    throw generateErrorFromStatus(
+      tootRes.status,
+      `Failed to toot poem: ${await tootRes.text()}`,
+    );
   }
 }
 
@@ -178,11 +200,12 @@ export default {
     console.log(`Found ${items.length} items.`);
 
     for (const item of items) {
+
+      const incident = item.description;
+
+      const recordValue = await env.FEED_ITEMS.get(item.guid);
+
       try {
-        const incident = item.description;
-
-        const recordValue = await env.FEED_ITEMS.get(item.guid);
-
         let record: FeedRecord = recordValue
           ? JSON.parse(recordValue)
           : {
@@ -191,36 +214,62 @@ export default {
           };
 
         if (record.status === FeedRecordStatus.PENDING_POEM) {
-          const poem = await generatePoemGemini(env.GEMINI_API_KEY, incident, poemStart);
+          try {
+            const poem = await generatePoemGemini(env.GEMINI_API_KEY, incident, poemStart);
 
-          record = {
-            ...record,
-            status: FeedRecordStatus.PENDING_TOOT,
-            poem,
-          };
-          await env.FEED_ITEMS.put(item.guid, JSON.stringify(record));
-          console.log(`Successfully generated poem for item guid=${item.guid}.`);
+            record = {
+              ...record,
+              status: FeedRecordStatus.PENDING_TOOT,
+              poem,
+            };
+            await env.FEED_ITEMS.put(item.guid, JSON.stringify(record));
+            console.log(`Successfully generated poem for item guid=${item.guid}.`);
+          } catch (err) {
+            if (err instanceof ClientError) {
+              record = {
+                ...record,
+                status: FeedRecordStatus.FAILED,
+              };
+              await env.FEED_ITEMS.put(item.guid, JSON.stringify(record));
+              console.log(`Encountered client error when generating poem for item guid=${item.guid}. Setting to FAILED.`);
+            }
+          }
         }
 
         if (record.status === FeedRecordStatus.PENDING_TOOT) {
           const poem = record.poem;
           if (poem) {
-            const tootContent = generateToot(item, poem);
-            await toot(env.MSTDN_URL, env.MSTDN_ACCESS_TOKEN, tootContent);
+            try {
+              const tootContent = generateToot(item, poem);
+              await toot(env.MSTDN_URL, env.MSTDN_ACCESS_TOKEN, tootContent);
 
-            record = {
-              ...record,
-              status: FeedRecordStatus.COMPLETE,
-            };
-            await env.FEED_ITEMS.put(item.guid, JSON.stringify(record));
-            console.log(`Successfully tooted poem for item guid=${item.guid}.`);
+              record = {
+                ...record,
+                status: FeedRecordStatus.COMPLETE,
+              };
+              await env.FEED_ITEMS.put(item.guid, JSON.stringify(record));
+              console.log(`Successfully tooted poem for item guid=${item.guid}.`);
+            } catch (err) {
+              if (err instanceof ClientError) {
+                record = {
+                  ...record,
+                  status: FeedRecordStatus.FAILED,
+                };
+                await env.FEED_ITEMS.put(item.guid, JSON.stringify(record));
+                console.log(`Encountered client error when tooting poem for item guid=${item.guid}. Setting to FAILED.`);
+              }
+            }
           } else {
             console.log(`Error: poem not found for item guid=${item.guid}! Skipping.`);
           }
         }
 
         if (record.status === FeedRecordStatus.COMPLETE) {
-          console.log(`Item guid=${item.guid} is already complete.`);
+          console.log(`Item guid=${item.guid} is COMPLETE.`);
+        }
+
+        if (record.status === FeedRecordStatus.FAILED) {
+          console.log(`Item guid=${item.guid} is FAILED and requires manual intervention. Skipping.`);
         }
       } catch (err) {
         console.log(`Failed to process item guid=${item.guid}: ${err}`);
