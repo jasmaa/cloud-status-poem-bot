@@ -1,18 +1,20 @@
-require('dotenv').config({ path: '.dev.vars' });
+require('dotenv').config();
 
 const { program } = require('commander');
 
 program
-  .requiredOption('--account-id <accountId>', "Cloudflare account id")
-  .requiredOption("--namespace-id <namespaceId>", "Feed items namespace id")
+  .description("Find records by status")
+  .option('--status <status>', "Record status. (ex. FAILED)")
 
 program.parse();
 
 const options = program.opts();
 
 (async () => {
-  const { accountId, namespaceId } = options;
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const namespaceId = process.env.FEED_ITEMS_ID;
   const accessKey = process.env.CLOUDFLARE_API_TOKEN;
+  const status = options.status || "FAILED";
 
   const listKeysRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/keys`, {
     method: "GET",
@@ -20,6 +22,12 @@ const options = program.opts();
       "Authorization": `Bearer ${accessKey}`
     },
   });
+
+  if (listKeysRes.status !== 200) {
+    console.log("Error:", await listKeysRes.text());
+    return;
+  }
+
   const listKeysResBody = await listKeysRes.json();
 
   const failedRecordKeys = (await Promise.all(listKeysResBody.result.map(async ({ name }) => {
@@ -31,7 +39,7 @@ const options = program.opts();
     });
     try {
       const record = await getValueRes.json();
-      if (record.status === "FAILED") {
+      if (record.status === status) {
         return name;
       }
     } catch (error) {

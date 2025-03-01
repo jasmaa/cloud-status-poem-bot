@@ -7,6 +7,7 @@ const fs = require('node:fs');
 
 const content = `name = "aws-status-poem-bot"
 compatibility_date = "2023-07-23"
+account_id = "${process.env.CLOUDFLARE_ACCOUNT_ID}"
 
 [[kv_namespaces]]
 binding = "FEED_ITEMS"
