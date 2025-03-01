@@ -44,7 +44,7 @@ wrangler secret put GEMINI_API_KEY
 wrangler secret put MSTDN_ACCESS_TOKEN
 ```
 
-Create `.env` from `sample.env` and fill with proper values (the default
+Create `.dev.env` from `sample.dev.env` and fill with proper values (the default
 Mastodon instance is mastodon.social).
 
 Generate `wrangler.toml` with script:

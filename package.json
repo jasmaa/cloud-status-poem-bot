@@ -5,6 +5,7 @@
     "@cloudflare/vitest-pool-workers": "^0.6.12",
     "@cloudflare/workers-types": "^4.20230717.1",
     "@vitest/coverage-istanbul": "^3.0.7",
+    "commander": "^13.1.0",
     "dotenv": "^16.4.5",
     "typescript": "^5.1.6",
     "vitest": "^2.1.6",
