@@ -1,8 +1,8 @@
-# AWS Status Poem Bot
+# Cloud Status Poem Bot
 
 A Mastodon bot that writes poems about AWS statuses.
 
-![Mastodon toot of a poem written by the bot](docs/screenshot_01.png)
+![Mastodon toot of a poem written by the bot](docs/screenshot_02.png)
 
 ## Getting Started
 
@@ -44,14 +44,13 @@ wrangler secret put GEMINI_API_KEY
 wrangler secret put MSTDN_ACCESS_TOKEN
 ```
 
-Create `.dev.env` from `sample.dev.env` and fill with proper values (the default
+Create `.env` from `sample.env` and fill with proper values (the default
 Mastodon instance is mastodon.social).
 
 Generate `wrangler.toml` with script:
 
 ```
-pip install -r "requirements.txt"
-pyhon scripts/generate_wrangler.py
+npm run generate-wrangler
 ```
 
 ### Development
