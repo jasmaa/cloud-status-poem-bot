@@ -9,6 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       FEED_ITEMS_ID: ${{ secrets.FEED_ITEMS_ID }}
       FEED_ITEMS_PREVIEW_ID: ${{ secrets.FEED_ITEMS_PREVIEW_ID }}
       MSTDN_URL: "https://mastodon.social"
