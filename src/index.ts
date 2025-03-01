@@ -83,7 +83,7 @@ And make this all right.
 Please write a poem about the following AWS incident. The poem must adhere to the following criteria. If it does not, you will be fined $100:
 - It must rhyme
 - It must sound good
-- It must be 400 or fewer characters long
+- It should be 3 stanzas long, averaging 10 words per line
 
 ## Incident
 
