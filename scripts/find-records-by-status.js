@@ -1,10 +1,9 @@
 require('dotenv').config();
-
 const { program } = require('commander');
 
 program
   .description("Find records by status")
-  .option('--status <status>', "Record status. (ex. FAILED)")
+  .option('--status <status>', "Record status. (ex. FAILED)");
 
 program.parse();
 
