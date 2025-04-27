@@ -16,7 +16,7 @@ const options = program.opts();
   const { prompt } = options;
 
   const completionRes = await fetch(
-    "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent",
+    "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent",
     {
       method: "POST",
       headers: {
