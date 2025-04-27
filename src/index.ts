@@ -129,9 +129,10 @@ async function getRssFeedItems(): Promise<RssItem[]> {
 }
 
 async function generatePoemGemini(apiKey: string, incident: string, poemStart: string): Promise<string> {
+  // See: https://ai.google.dev/gemini-api/docs/models
   const prompt = generatePrompt(incident, poemStart);
   const completionRes = await fetch(
-    "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
+    "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent",
     {
       method: "POST",
       headers: {
