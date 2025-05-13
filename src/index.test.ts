@@ -51,21 +51,21 @@ function mockSuccessfulGeminiCompletion() {
   };
   fetchMock
     .get("https://generativelanguage.googleapis.com")
-    .intercept({ path: `/v1/models/gemini-2.0-flash-lite:generateContent`, method: "POST" })
+    .intercept({ path: `/v1/models/gemini-2.0-flash:generateContent`, method: "POST" })
     .reply(200, completionContent);
 }
 
 function mockClientFailureGeminiCompletion() {
   fetchMock
     .get("https://generativelanguage.googleapis.com")
-    .intercept({ path: `/v1/models/gemini-2.0-flash-lite:generateContent`, method: "POST" })
+    .intercept({ path: `/v1/models/gemini-2.0-flash:generateContent`, method: "POST" })
     .reply(400, "bad request");
 }
 
 function mockServerFailureGeminiCompletion() {
   fetchMock
     .get("https://generativelanguage.googleapis.com")
-    .intercept({ path: `/v1/models/gemini-2.0-flash-lite:generateContent`, method: "POST" })
+    .intercept({ path: `/v1/models/gemini-2.0-flash:generateContent`, method: "POST" })
     .reply(500, "internal server error");
 }
 
