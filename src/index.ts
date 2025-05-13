@@ -81,6 +81,7 @@ They'll fix the data plane,
 And make this all right.
 
 Please write a poem about the following AWS incident. The poem must adhere to the following criteria. If it does not, you will be fined $100:
+- It must start with "${poemStart}"
 - It must rhyme
 - It must sound good
 - It should be 3 stanzas long, averaging 10 words per line
@@ -90,8 +91,7 @@ Please write a poem about the following AWS incident. The poem must adhere to th
 ${description}
 
 ## Poem
-
-${poemStart}`;
+`;
 }
 
 function generateToot(item: RssItem, poem: string) {
