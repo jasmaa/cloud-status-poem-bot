@@ -29,24 +29,41 @@ const options = program.opts();
 
   const listKeysResBody = await listKeysRes.json();
 
-  const failedRecordKeys = (await Promise.all(listKeysResBody.result.map(async ({ name }) => {
-    const getValueRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${encodeURIComponent(name)}`, {
-      method: "GET",
+  const keys = listKeysResBody.result.map(({ name }) => name);
+
+  let bulkGetCounter = 0;
+  const filteredRecords = [];
+  while (bulkGetCounter < keys.length) {
+    const currentKeys = keys.slice(bulkGetCounter, bulkGetCounter + 100);
+    const bulkGetValueRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/bulk/get`, {
+      method: "POST",
       headers: {
         "Authorization": `Bearer ${accessKey}`
       },
+      body: JSON.stringify({
+        keys: currentKeys,
+      })
     });
-    try {
-      const record = await getValueRes.json();
-      if (record.status === status) {
-        return name;
-      }
-    } catch (error) {
-      // Silently fail
-    }
-  }))).filter((v) => !!v);
 
-  for (const name of failedRecordKeys) {
-    console.log(name);
+    const data = await bulkGetValueRes.json();
+    for (const key in data.result.values) {
+      try {
+        const record = JSON.parse(data.result.values[key]);
+        if (record.status === status) {
+          filteredRecords.push({
+            key,
+            value: record,
+          });
+        }
+      } catch (err) {
+        // Legacy non-JSON record. Silently fail
+      }
+    }
+
+    bulkGetCounter += 100;
+  }
+
+  for (const { key } of filteredRecords) {
+    console.log(key);
   }
 })();
