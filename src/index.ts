@@ -84,7 +84,7 @@ Please write a poem about the following AWS incident. The poem must adhere to th
 - It must start with "${poemStart}"
 - It must rhyme
 - It must sound good
-- It should be 3 stanzas long, averaging 10 words per line
+- It must not exceed 400 characters
 
 ## Incident
 
