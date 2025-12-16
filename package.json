@@ -9,7 +9,7 @@
     "dotenv": "^16.4.5",
     "typescript": "^5.1.6",
     "vitest": "^3.2.0",
-    "wrangler": "^3.88.0"
+    "wrangler": "^4.55.0"
   },
   "private": true,
   "scripts": {
